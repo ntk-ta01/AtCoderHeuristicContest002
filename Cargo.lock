@@ -565,6 +565,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab16ced94dbd8a46c82fd81e3ed9a8727dac2977ea869d217bcc4ea1f122e81f"
 
 [[package]]
+name = "svg"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a95656b5b37251de210aa2751d538b6f31ce375bacf725a32223bfa6344e0776"
+
+[[package]]
 name = "syn"
 version = "0.15.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -599,6 +605,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8018d24e04c95ac8790716a5987d0fec4f8b27249ffa0f7d33f1369bdfb88cbd"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "tools"
+version = "1.0.0"
+dependencies = [
+ "itertools 0.9.0",
+ "proconio",
+ "rand",
+ "rand_chacha",
+ "svg",
 ]
 
 [[package]]
