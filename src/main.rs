@@ -1,3 +1,4 @@
+use permutohedron::LexicalPermutation;
 use proconio::input;
 use std::cmp;
 
@@ -9,7 +10,7 @@ const DIR: [(usize, usize); 4] = [
 ];
 const CHAR: [char; 4] = ['L', 'D', 'R', 'U'];
 const N: usize = 50;
-const TIMELIMIT: f64 = 1.955;
+const TIMELIMIT: f64 = 1.95;
 
 struct Input {
     si: usize,
@@ -18,7 +19,6 @@ struct Input {
     ps: Vec<Vec<i32>>,
 }
 fn main() {
-    let timer = Timer::new();
     input! {
         si: usize,
         sj: usize,
@@ -27,7 +27,7 @@ fn main() {
     }
     let input = Input { si, sj, ts, ps };
 
-    let state = solve(&input, timer);
+    let state = solve(&input);
 
     println!("{}", state.encode());
     eprintln!("{}", state.score);
@@ -73,8 +73,8 @@ fn dfs(
     true
 }
 
-fn solve(input: &Input, timer: Timer) -> State {
-    let mut timer = timer;
+fn solve(input: &Input) -> State {
+    let mut timer = Timer::new();
 
     let mut m = 0;
     for i in 0..N {
@@ -83,7 +83,7 @@ fn solve(input: &Input, timer: Timer) -> State {
         }
     }
 
-    let mut states = vec![State {
+    let mut state = State {
         score: 0,
         pos: Position {
             i: input.si,
@@ -91,21 +91,19 @@ fn solve(input: &Input, timer: Timer) -> State {
         },
         used: vec![false; m],
         route: vec![],
-    }];
-    states[0].used[input.ts[input.si][input.sj]] = true;
-    states[0].score += input.ps[input.si][input.sj];
+    };
+    state.used[input.ts[input.si][input.sj]] = true;
+    state.score += input.ps[input.si][input.sj];
 
-    let mut best_state = states[0].clone();
+    let mut best_state = state.clone();
 
-    let mut state = states.pop().unwrap();
+    let mut ord = [0, 1, 2, 3];
 
-    dfs(
-        &[0usize, 1usize, 2usize, 3usize],
-        input,
-        &mut state,
-        &mut best_state,
-        &mut timer,
-    );
+    for _ in 0..24 {
+        timer.reset();
+        dfs(&ord, input, &mut state.clone(), &mut best_state, &mut timer);
+        ord.next_permutation();
+    }
 
     best_state
 }
@@ -197,11 +195,16 @@ impl Timer {
         get_time() - self.start_time
     }
 
+    fn reset(&mut self) {
+        self.start_time = get_time();
+        self.time_count = 0;
+    }
+
     fn is_over(&mut self) -> bool {
         self.time_count += 1;
         if self.time_count >= 100 {
             self.time_count = 0;
-            if self.get_time() / TIMELIMIT >= 1.0 {
+            if self.get_time() > TIMELIMIT / 24.0 {
                 true
             } else {
                 false
