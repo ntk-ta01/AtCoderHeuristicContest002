@@ -109,7 +109,7 @@ fn solve(input: &Input) -> State {
 }
 
 #[allow(dead_code)]
-fn compute_score(input: &Input, out: &String) -> i32 {
+fn compute_score(input: &Input, out: &str) -> i32 {
     let mut i = input.si as usize;
     let mut j = input.sj as usize;
     let mut score = input.ps[i][j];
@@ -204,11 +204,7 @@ impl Timer {
         self.time_count += 1;
         if self.time_count >= 100 {
             self.time_count = 0;
-            if self.get_time() > TIMELIMIT / 24.0 {
-                true
-            } else {
-                false
-            }
+            self.get_time() > TIMELIMIT / 24.0
         } else {
             false
         }
