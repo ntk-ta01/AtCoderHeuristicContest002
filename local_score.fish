@@ -22,3 +22,5 @@ for val in (seq 10 99)
   set score (math $score + $now)
 end
 echo $score
+
+rm tmp
