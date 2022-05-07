@@ -4,7 +4,7 @@ const DIJ: [(usize, usize); 4] = [(1, 0), (!0, 0), (0, 1), (0, !0)];
 const DIR: [char; 4] = ['D', 'U', 'R', 'L'];
 
 const N: usize = 50;
-const TIMELIMIT: f64 = 1.8;
+const DFSTIMELIMIT: f64 = 0.8;
 
 type Output = String;
 
@@ -56,7 +56,7 @@ fn main() {
     );
     let output = parse_output(&best_out);
     println!("{}", output);
-    let (score, err, _, _) = compute_score_detail(&input, &output);
+    let (score, err, _) = compute_score(&input, &output);
     eprintln!("{} {}", score, err);
 }
 
@@ -86,10 +86,11 @@ fn dfs(
             out.push(i);
         }
         dfs((nh, nw), input, out, best_out, visited, visited_tile, timer);
+        let now = timer.get_time();
         if best_out.len() < out.len() {
             *best_out = out.clone();
         }
-        if TIMELIMIT < timer.get_time() {
+        if DFSTIMELIMIT < now {
             return;
         }
         if input.tiles[h][w] != input.tiles[nh][nw] {
@@ -100,15 +101,11 @@ fn dfs(
     }
 }
 
-fn compute_score_detail(
-    input: &Input,
-    out: &Output,
-) -> (i32, String, Vec<usize>, Vec<(usize, usize)>) {
+fn compute_score(input: &Input, out: &Output) -> (i32, String, Vec<usize>) {
     let mut used = vec![0; N * N];
     let (mut i, mut j) = input.s;
     used[input.tiles[i][j]] = 1;
     let mut score = input.ps[i][j];
-    let mut steps = vec![(i, j)];
     let mut err = String::new();
     for c in out.chars() {
         let (di, dj) = match c {
@@ -117,15 +114,14 @@ fn compute_score_detail(
             'U' => (!0, 0),
             'D' => (1, 0),
             _ => {
-                return (0, "Illegal output".to_owned(), used, steps);
+                return (0, "Illegal output".to_owned(), used);
             }
         };
         i += di;
         j += dj;
         if i >= N || j >= N {
-            return (0, "Out of range".to_owned(), used, steps);
+            return (0, "Out of range".to_owned(), used);
         }
-        steps.push((i, j));
         if used[input.tiles[i][j]] != 0 {
             err = "Stepped on the same tile twice".to_owned();
         }
@@ -135,7 +131,7 @@ fn compute_score_detail(
     if !err.is_empty() {
         score = 0;
     }
-    (score, err, used, steps)
+    (score, err, used)
 }
 
 pub fn get_time() -> f64 {
