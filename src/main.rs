@@ -4,7 +4,7 @@ use rand::prelude::*;
 const DIJ: [(usize, usize); 4] = [(1, 0), (!0, 0), (0, 1), (0, !0)];
 
 const N: usize = 50;
-const TIMELIMIT: f64 = 1.95;
+const TIMELIMIT: f64 = 1.99;
 
 type Output = String;
 
@@ -32,7 +32,7 @@ fn main() {
 }
 
 fn annealing(input: &Input, timer: &mut Timer, rng: &mut rand_chacha::ChaCha20Rng) -> Output {
-    const T0: f64 = 100.0;
+    const T0: f64 = 200.0;
     const T1: f64 = 1.0;
     let mut temp = T0;
     let mut prob;
