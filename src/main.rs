@@ -119,6 +119,8 @@ fn annealing(
     let mut best_score = score_prev[score_prev.len() - 1];
     let mut best_path = path.clone();
 
+    let mut ord = [0, 1, 2, 3];
+
     let mut count = 0;
     loop {
         if count >= 100 {
@@ -142,9 +144,10 @@ fn annealing(
         let (mut y, mut x) = path[start];
         loop {
             let mut found = false;
-            for &(dh, dw) in DIJ.iter() {
-                let nh = y + dh;
-                let nw = x + dw;
+            ord.shuffle(rng);
+            for &o in ord.iter() {
+                let nh = y + DIJ[o].0;
+                let nw = x + DIJ[o].1;
                 if N <= nh || N <= nw {
                     continue;
                 }
