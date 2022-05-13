@@ -2,10 +2,9 @@ use proconio::input;
 use rand::prelude::*;
 
 const DIJ: [(usize, usize); 4] = [(1, 0), (!0, 0), (0, 1), (0, !0)];
-const DIR: [char; 4] = ['D', 'U', 'R', 'L'];
 
 const N: usize = 50;
-const TIMELIMIT: f64 = 1.9;
+const TIMELIMIT: f64 = 1.95;
 
 type Output = String;
 
@@ -24,32 +23,17 @@ fn parse_input() -> Input {
     Input { s, tiles, ps }
 }
 
-fn parse_output(out: &[usize]) -> Output {
-    out.iter().map(|i| DIR[*i]).collect()
-}
-
 fn main() {
     let mut timer = Timer::new();
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(93216000);
     let input = parse_input();
-    let mut output = {
-        let best_out = vec![];
-        parse_output(&best_out)
-    };
-    annealing(&input, &mut output, &mut timer, &mut rng);
+    let output = annealing(&input, &mut timer, &mut rng);
     println!("{}", output);
-    // let (score, err, _) = compute_score(&input, &output);
-    // eprintln!("{} {}", score, err);
 }
 
-fn annealing(
-    input: &Input,
-    output: &mut Output,
-    timer: &mut Timer,
-    rng: &mut rand_chacha::ChaCha20Rng,
-) {
+fn annealing(input: &Input, timer: &mut Timer, rng: &mut rand_chacha::ChaCha20Rng) -> Output {
     const T0: f64 = 100.0;
-    const T1: f64 = 0.1;
+    const T1: f64 = 1.0;
     let mut temp = T0;
     let mut prob;
 
@@ -61,24 +45,7 @@ fn annealing(
         .unwrap()
         + 1;
 
-    let mut path = {
-        let mut path = vec![];
-        let (mut y, mut x) = input.s;
-        path.push((y, x));
-        for ch in output.chars() {
-            let (di, dj) = match ch {
-                'L' => (0, !0),
-                'R' => (0, 1),
-                'U' => (!0, 0),
-                'D' => (1, 0),
-                _ => unreachable!(),
-            };
-            y += di;
-            x += dj;
-            path.push((y, x));
-        }
-        path
-    };
+    let mut path = vec![input.s];
 
     let (mut used_tile_prev, mut used_pos_prev, mut score_prev) = {
         let mut v1 = vec![m; m];
@@ -205,55 +172,23 @@ fn annealing(
             best_path = path.clone();
         }
     }
-    *output = {
-        let mut output = vec![];
-        for (&pre, &now) in best_path.iter().zip(best_path.iter().skip(1)) {
-            let di = now.0 as i32 - pre.0 as i32;
-            let dj = now.1 as i32 - pre.1 as i32;
-            let ch = match (di, dj) {
-                (0, -1) => 'L',
-                (0, 1) => 'R',
-                (-1, 0) => 'U',
-                (1, 0) => 'D',
-                _ => unreachable!(),
-            };
-            output.push(ch);
-        }
-        output.iter().collect()
-    };
-}
 
-fn compute_score(input: &Input, out: &Output) -> (i32, String, Vec<usize>) {
-    let mut used = vec![0; N * N];
-    let (mut i, mut j) = input.s;
-    used[input.tiles[i][j]] = 1;
-    let mut score = input.ps[i][j];
-    let mut err = String::new();
-    for c in out.chars() {
-        let (di, dj) = match c {
-            'L' => (0, !0),
-            'R' => (0, 1),
-            'U' => (!0, 0),
-            'D' => (1, 0),
-            _ => {
-                return (0, "Illegal output".to_owned(), used);
-            }
+    // parse_output
+    let mut output = vec![];
+    for (&pre, &now) in best_path.iter().zip(best_path.iter().skip(1)) {
+        let di = now.0 as i32 - pre.0 as i32;
+        let dj = now.1 as i32 - pre.1 as i32;
+        let ch = match (di, dj) {
+            (0, -1) => 'L',
+            (0, 1) => 'R',
+            (-1, 0) => 'U',
+            (1, 0) => 'D',
+            _ => unreachable!(),
         };
-        i += di;
-        j += dj;
-        if i >= N || j >= N {
-            return (0, "Out of range".to_owned(), used);
-        }
-        if used[input.tiles[i][j]] != 0 {
-            err = "Stepped on the same tile twice".to_owned();
-        }
-        used[input.tiles[i][j]] += 1;
-        score += input.ps[i][j];
+        output.push(ch);
     }
-    if !err.is_empty() {
-        score = 0;
-    }
-    (score, err, used)
+    // eprintln!("{}", best_score);
+    output.iter().collect()
 }
 
 pub fn get_time() -> f64 {
