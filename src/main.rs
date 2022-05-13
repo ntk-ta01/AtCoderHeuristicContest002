@@ -5,8 +5,7 @@ const DIJ: [(usize, usize); 4] = [(1, 0), (!0, 0), (0, 1), (0, !0)];
 const DIR: [char; 4] = ['D', 'U', 'R', 'L'];
 
 const N: usize = 50;
-const DFSTIMELIMIT: f64 = 0.8;
-const TIMELIMIT: f64 = 1.8;
+const TIMELIMIT: f64 = 1.9;
 
 type Output = String;
 
@@ -34,30 +33,7 @@ fn main() {
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(93216000);
     let input = parse_input();
     let mut output = {
-        let mut out = vec![];
-        let mut best_out = vec![];
-        let mut visited = vec![vec![false; N]; N];
-        let mut visited_tile_num = vec![
-            false;
-            *input
-                .tiles
-                .iter()
-                .map(|itr| itr.iter().max().unwrap())
-                .max()
-                .unwrap()
-                + 1
-        ];
-        visited[input.s.0][input.s.1] = true;
-        visited_tile_num[input.tiles[input.s.0][input.s.1]] = true;
-        dfs(
-            (input.s.0, input.s.1),
-            &input,
-            &mut out,
-            &mut best_out,
-            &mut visited,
-            &mut visited_tile_num,
-            &mut timer,
-        );
+        let best_out = vec![];
         parse_output(&best_out)
     };
     annealing(&input, &mut output, &mut timer, &mut rng);
@@ -73,7 +49,7 @@ fn annealing(
     rng: &mut rand_chacha::ChaCha20Rng,
 ) {
     const T0: f64 = 100.0;
-    const T1: f64 = 0.00001;
+    const T1: f64 = 0.1;
     let mut temp = T0;
     let mut prob;
 
@@ -247,47 +223,6 @@ fn annealing(
     };
 }
 
-fn dfs(
-    v: (usize, usize),
-    input: &Input,
-    out: &mut Vec<usize>,
-    best_out: &mut Vec<usize>,
-    visited: &mut [Vec<bool>],
-    visited_tile: &mut [bool],
-    timer: &mut Timer,
-) {
-    let (h, w) = v;
-    for (i, &(dh, dw)) in DIJ.iter().enumerate() {
-        let nh = h + dh;
-        let nw = w + dw;
-        if N <= nh || N <= nw || visited[nh][nw] {
-            continue;
-        }
-        if visited_tile[input.tiles[nh][nw]] {
-            // 訪れたことがあるタイル番号は踏めない
-            continue;
-        }
-        visited[nh][nw] = true;
-        visited_tile[input.tiles[nh][nw]] = true;
-        if input.tiles[h][w] != input.tiles[nh][nw] {
-            out.push(i);
-        }
-        dfs((nh, nw), input, out, best_out, visited, visited_tile, timer);
-        let now = timer.get_time();
-        if best_out.len() < out.len() {
-            *best_out = out.clone();
-        }
-        if DFSTIMELIMIT < now {
-            return;
-        }
-        if input.tiles[h][w] != input.tiles[nh][nw] {
-            out.pop();
-        }
-        visited_tile[input.tiles[nh][nw]] = false;
-        visited[nh][nw] = false;
-    }
-}
-
 fn compute_score(input: &Input, out: &Output) -> (i32, String, Vec<usize>) {
     let mut used = vec![0; N * N];
     let (mut i, mut j) = input.s;
@@ -343,7 +278,7 @@ impl Timer {
         get_time() - self.start_time
     }
 
-    fn reset(&mut self) {
-        self.start_time = get_time();
-    }
+    // fn reset(&mut self) {
+    //     self.start_time = get_time();
+    // }
 }
